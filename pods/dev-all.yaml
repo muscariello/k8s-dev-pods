@@ -1,0 +1,154 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: dev-all
+  namespace: lumuscar-jobs
+  labels:
+    app: dev-all
+    type: development
+spec:
+  restartPolicy: Always
+  containers:
+  - name: all-dev
+    image: ubuntu:24.04
+    command:
+      - /bin/bash
+      - -c
+      - |
+        # Configure HTTP proxy
+        export HTTP_PROXY=http://proxy-wsa.esl.cisco.com:80
+        export HTTPS_PROXY=http://proxy-wsa.esl.cisco.com:80
+        export NO_PROXY=localhost,127.0.0.1,.svc,.cluster.local
+
+        # Configure proxy for apt
+        echo "Acquire::http::Proxy \"http://proxy-wsa.esl.cisco.com:80\";" > /etc/apt/apt.conf.d/proxy.conf
+        echo "Acquire::https::Proxy \"http://proxy-wsa.esl.cisco.com:80\";" >> /etc/apt/apt.conf.d/proxy.conf
+
+        # Update package lists
+        apt-get update
+
+        # Install base development tools
+        apt-get install -y \
+          curl \
+          wget \
+          git \
+          vim \
+          nano \
+          tmux \
+          zsh \
+          build-essential \
+          pkg-config \
+          libssl-dev \
+          cmake \
+          protobuf-compiler \
+          sudo \
+          ssh \
+          ca-certificates \
+          unzip \
+          gcc \
+          g++ \
+          clang \
+          lldb \
+          lld \
+          python3 \
+          python3-pip \
+          python3-venv
+
+        # Install Rust
+        echo "Installing Rust..."
+        curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y --default-toolchain stable
+        export PATH="/workspace/.cargo/bin:$PATH"
+        source /workspace/.cargo/env
+        rustup component add clippy rustfmt rust-analyzer
+        rustup target add x86_64-unknown-linux-gnu aarch64-unknown-linux-gnu
+        rustup default stable
+
+        # Install Go
+        echo "Installing Go..."
+        GO_VERSION=1.25.4
+        wget -q https://go.dev/dl/go${GO_VERSION}.linux-amd64.tar.gz
+        tar -C /usr/local -xzf go${GO_VERSION}.linux-amd64.tar.gz
+        rm go${GO_VERSION}.linux-amd64.tar.gz
+        export PATH="/usr/local/go/bin:/workspace/go/bin:$PATH"
+        export GOPATH=/workspace/go
+        export GOBIN=/workspace/go/bin
+        mkdir -p /workspace/go/bin
+
+        # Install Go tools
+        go install golang.org/x/tools/gopls@latest
+        go install github.com/go-delve/delve/cmd/dlv@latest
+        go install honnef.co/go/tools/cmd/staticcheck@latest
+        go install golang.org/x/tools/cmd/goimports@latest
+        go install github.com/golangci/golangci-lint/cmd/golangci-lint@latest
+
+        # Install Node.js and npm
+        echo "Installing Node.js..."
+        NODE_VERSION=22
+        curl -fsSL https://deb.nodesource.com/setup_${NODE_VERSION}.x | bash -
+        apt-get install -y nodejs
+
+        # Install global Node.js tools
+        npm install -g typescript eslint prettier yarn pnpm
+
+        # Install Python tools
+        echo "Installing Python tools..."
+        pip3 install --break-system-packages pytest pytest-cov black flake8 mypy jupyter pandas numpy
+
+        # Install Task (build automation)
+        echo "Installing Task..."
+        curl -sL https://taskfile.dev/install.sh | sh -s -- -b /usr/local/bin
+
+        # Setup workspace
+        mkdir -p /workspace
+        cd /workspace
+
+        echo "========================================="
+        echo "Multi-language development environment ready!"
+        echo "========================================="
+        echo "Rust: $(rustc --version)"
+        echo "Cargo: $(cargo --version)"
+        echo "Go: $(go version)"
+        echo "Node.js: $(node --version)"
+        echo "npm: $(npm --version)"
+        echo "Python: $(python3 --version)"
+        echo "Task: $(task --version)"
+        echo "Workspace: /workspace"
+        echo "========================================="
+
+        # Keep container running
+        sleep infinity
+    env:
+    - name: HTTP_PROXY
+      value: "http://proxy-wsa.esl.cisco.com:80"
+    - name: HTTPS_PROXY
+      value: "http://proxy-wsa.esl.cisco.com:80"
+    - name: NO_PROXY
+      value: "localhost,127.0.0.1,.svc,.cluster.local"
+    - name: CARGO_HOME
+      value: "/workspace/.cargo"
+    - name: RUSTUP_HOME
+      value: "/workspace/.rustup"
+    - name: GOPATH
+      value: "/workspace/go"
+    - name: GOBIN
+      value: "/workspace/go/bin"
+    - name: GOTOOLCHAIN
+      value: "auto"
+    - name: PYTHONPATH
+      value: "/workspace"
+    - name: PATH
+      value: "/workspace/.cargo/bin:/workspace/go/bin:/usr/local/go/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
+    volumeMounts:
+    - name: workspace
+      mountPath: /workspace
+    resources:
+      requests:
+        memory: "8Gi"
+        cpu: "4000m"
+      limits:
+        memory: "32Gi"
+        cpu: "16000m"
+  volumes:
+  - name: workspace
+    persistentVolumeClaim:
+      claimName: dev-all-workspace

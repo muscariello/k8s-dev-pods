@@ -1,0 +1,97 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: dev-go
+  namespace: lumuscar-jobs
+  labels:
+    app: dev-go
+    type: development
+spec:
+  restartPolicy: Always
+  containers:
+  - name: go-dev
+    image: golang:1.25-bookworm
+    command:
+      - /bin/bash
+      - -c
+      - |
+        # Configure HTTP proxy
+        export HTTP_PROXY=http://proxy-wsa.esl.cisco.com:80
+        export HTTPS_PROXY=http://proxy-wsa.esl.cisco.com:80
+        export NO_PROXY=localhost,127.0.0.1,.svc,.cluster.local
+
+        # Configure proxy for apt
+        echo "Acquire::http::Proxy \"http://proxy-wsa.esl.cisco.com:80\";" > /etc/apt/apt.conf.d/proxy.conf
+        echo "Acquire::https::Proxy \"http://proxy-wsa.esl.cisco.com:80\";" >> /etc/apt/apt.conf.d/proxy.conf
+
+        # Update package lists
+        apt-get update
+
+        # Install development tools
+        apt-get install -y \
+          curl \
+          wget \
+          git \
+          vim \
+          nano \
+          tmux \
+          zsh \
+          build-essential \
+          protobuf-compiler \
+          sudo \
+          ssh \
+          ca-certificates \
+          make \
+          gcc \
+          g++ \
+          unzip
+
+        # Install common Go tools
+        go install golang.org/x/tools/gopls@latest
+        go install github.com/go-delve/delve/cmd/dlv@latest
+        go install honnef.co/go/tools/cmd/staticcheck@latest
+        go install golang.org/x/tools/cmd/goimports@latest
+        go install github.com/golangci/golangci-lint/cmd/golangci-lint@latest
+
+        # Install Task (build automation)
+        curl -sL https://taskfile.dev/install.sh | sh -s -- -b /usr/local/bin
+
+        # Setup workspace
+        mkdir -p /workspace
+        cd /workspace
+
+        echo "Go development environment ready!"
+        echo "Installed Go version: $(go version)"
+        echo "Workspace: /workspace"
+
+        # Keep container running
+        sleep infinity
+    env:
+    - name: HTTP_PROXY
+      value: "http://proxy-wsa.esl.cisco.com:80"
+    - name: HTTPS_PROXY
+      value: "http://proxy-wsa.esl.cisco.com:80"
+    - name: NO_PROXY
+      value: "localhost,127.0.0.1,.svc,.cluster.local"
+    - name: GOPATH
+      value: "/workspace/go"
+    - name: GOBIN
+      value: "/workspace/go/bin"
+    - name: GOTOOLCHAIN
+      value: "auto"
+    - name: PATH
+      value: "/workspace/go/bin:/usr/local/go/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
+    volumeMounts:
+    - name: workspace
+      mountPath: /workspace
+    resources:
+      requests:
+        memory: "8Gi"
+        cpu: "4000m"
+      limits:
+        memory: "32Gi"
+        cpu: "16000m"
+  volumes:
+  - name: workspace
+    persistentVolumeClaim:
+      claimName: dev-go-workspace

@@ -1,0 +1,19 @@
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: dev-pods-manager-binding
+  namespace: lumuscar-jobs
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: dev-pods-manager
+subjects:
+# Bind to all service accounts in lumuscar-jobs namespace
+- kind: Group
+  name: system:serviceaccounts:lumuscar-jobs
+  apiGroup: rbac.authorization.k8s.io
+
+# Also bind to namespace-user if it's a User (uncomment if needed)
+# - kind: User
+#   name: namespace-user
+#   apiGroup: rbac.authorization.k8s.io

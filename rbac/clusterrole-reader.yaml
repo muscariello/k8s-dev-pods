@@ -1,0 +1,45 @@
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: namespace-reader
+rules:
+# Read-only access to namespaces
+- apiGroups: [""]
+  resources: ["namespaces"]
+  verbs: ["get", "list", "watch"]
+
+# Read-only access to pods across all namespaces
+- apiGroups: [""]
+  resources: ["pods", "pods/log"]
+  verbs: ["get", "list", "watch"]
+
+# Read-only access to common resources across all namespaces
+- apiGroups: [""]
+  resources:
+    - "services"
+    - "configmaps"
+    - "secrets"
+    - "persistentvolumeclaims"
+    - "persistentvolumes"
+    - "nodes"
+    - "events"
+  verbs: ["get", "list", "watch"]
+
+# Read-only access to deployments, replicasets, statefulsets
+- apiGroups: ["apps"]
+  resources:
+    - "deployments"
+    - "replicasets"
+    - "statefulsets"
+    - "daemonsets"
+  verbs: ["get", "list", "watch"]
+
+# Read-only access to ingresses
+- apiGroups: ["networking.k8s.io"]
+  resources: ["ingresses"]
+  verbs: ["get", "list", "watch"]
+
+# Read-only access to metrics (if metrics-server is available)
+- apiGroups: ["metrics.k8s.io"]
+  resources: ["pods", "nodes"]
+  verbs: ["get", "list"]

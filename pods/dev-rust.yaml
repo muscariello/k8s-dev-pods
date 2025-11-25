@@ -1,0 +1,99 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: dev-rust
+  namespace: lumuscar-jobs
+  labels:
+    app: dev-rust
+    type: development
+spec:
+  restartPolicy: Always
+  containers:
+  - name: rust-dev
+    image: rust:1.90-bookworm
+    command:
+      - /bin/bash
+      - -c
+      - |
+        # Configure HTTP proxy
+        export HTTP_PROXY=http://proxy-wsa.esl.cisco.com:80
+        export HTTPS_PROXY=http://proxy-wsa.esl.cisco.com:80
+        export NO_PROXY=localhost,127.0.0.1,.svc,.cluster.local
+
+        # Update package lists
+        apt-get update
+
+        # Install development tools and dependencies (skip packages not in bookworm)
+        apt-get install -y \
+          curl \
+          wget \
+          git \
+          vim \
+          nano \
+          tmux \
+          zsh \
+          build-essential \
+          pkg-config \
+          libssl-dev \
+          cmake \
+          protobuf-compiler \
+          clang \
+          lldb \
+          lld \
+          llvm \
+          gcc-x86-64-linux-gnu \
+          g++-x86-64-linux-gnu \
+          libicu-dev \
+          libxml2-dev \
+          libffi-dev \
+          ca-certificates || true
+
+        # Set default Rust toolchain (rust:1.90 image comes with rustup)
+        rustup default stable
+
+        # Install rustup components
+        rustup component add clippy rustfmt rust-analyzer
+        rustup target add x86_64-unknown-linux-gnu
+        rustup target add aarch64-unknown-linux-gnu
+
+        # Install cargo tools (skip if fails to avoid blocking)
+        cargo install cargo-watch cargo-edit cargo-outdated cargo-audit || echo "Warning: Some cargo tools failed to install"
+
+        # Install Task (build automation)
+        curl -sL https://taskfile.dev/install.sh | sh -s -- -b /usr/local/bin
+
+        # Setup workspace
+        mkdir -p /workspace
+        cd /workspace
+
+        echo "Rust development environment ready!"
+        echo "Installed Rust version: $(rustc --version)"
+        echo "Workspace: /workspace"
+
+        # Keep container running
+        sleep infinity
+    env:
+    - name: HTTP_PROXY
+      value: "http://proxy-wsa.esl.cisco.com:80"
+    - name: HTTPS_PROXY
+      value: "http://proxy-wsa.esl.cisco.com:80"
+    - name: NO_PROXY
+      value: "localhost,127.0.0.1,.svc,.cluster.local"
+    - name: CARGO_HOME
+      value: "/workspace/.cargo"
+    - name: RUSTUP_HOME
+      value: "/workspace/.rustup"
+    volumeMounts:
+    - name: workspace
+      mountPath: /workspace
+    resources:
+      requests:
+        memory: "8Gi"
+        cpu: "4000m"
+      limits:
+        memory: "32Gi"
+        cpu: "16000m"
+  volumes:
+  - name: workspace
+    persistentVolumeClaim:
+      claimName: dev-rust-workspace

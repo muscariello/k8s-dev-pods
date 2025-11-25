@@ -1,0 +1,117 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: dev-js
+  namespace: lumuscar-jobs
+  labels:
+    app: dev-js
+    type: development
+spec:
+  restartPolicy: Always
+  containers:
+  - name: js-dev
+    image: node:22-bookworm
+    command:
+      - /bin/bash
+      - -c
+      - |
+        # Configure HTTP proxy
+        export HTTP_PROXY=http://proxy-wsa.esl.cisco.com:80
+        export HTTPS_PROXY=http://proxy-wsa.esl.cisco.com:80
+        export NO_PROXY=localhost,127.0.0.1,.svc,.cluster.local
+
+        # Update package lists
+        apt-get update
+
+        # Install development tools
+        apt-get install -y \
+          curl \
+          wget \
+          git \
+          vim \
+          nano \
+          tmux \
+          zsh \
+          build-essential \
+          sudo \
+          ssh \
+          ca-certificates \
+          python3 \
+          python3-pip \
+          gcc \
+          g++ \
+          make
+
+        # Setup NVM in workspace
+        export NVM_DIR="/workspace/.nvm"
+        mkdir -p $NVM_DIR
+
+        # Install NVM
+        curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.0/install.sh | bash
+
+        # Load NVM
+        [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
+
+        # Install LTS and latest Node versions via NVM
+        nvm install --lts
+        nvm install node
+        nvm alias default lts/*
+
+        # Install global npm packages
+        npm install -g \
+          typescript \
+          ts-node \
+          @types/node \
+          eslint \
+          prettier \
+          yarn \
+          pnpm \
+          nodemon \
+          pm2 \
+          nx \
+          vite \
+          webpack \
+          webpack-cli
+
+        # Install Task (build automation)
+        curl -sL https://taskfile.dev/install.sh | sh -s -- -b /usr/local/bin
+
+        # Setup workspace
+        mkdir -p /workspace
+        cd /workspace
+
+        echo "Node.js development environment ready!"
+        echo "Installed Node version: $(node --version)"
+        echo "Installed npm version: $(npm --version)"
+        echo "NVM installed at: $NVM_DIR"
+        echo "Workspace: /workspace"
+
+        # Keep container running
+        sleep infinity
+    env:
+    - name: HTTP_PROXY
+      value: "http://proxy-wsa.esl.cisco.com:80"
+    - name: HTTPS_PROXY
+      value: "http://proxy-wsa.esl.cisco.com:80"
+    - name: NO_PROXY
+      value: "localhost,127.0.0.1,.svc,.cluster.local"
+    - name: NVM_DIR
+      value: "/workspace/.nvm"
+    - name: NODE_PATH
+      value: "/workspace/.nvm/versions/node"
+    - name: PATH
+      value: "/workspace/.nvm/versions/node/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
+    volumeMounts:
+    - name: workspace
+      mountPath: /workspace
+    resources:
+      requests:
+        memory: "8Gi"
+        cpu: "4000m"
+      limits:
+        memory: "32Gi"
+        cpu: "16000m"
+  volumes:
+  - name: workspace
+    persistentVolumeClaim:
+      claimName: dev-js-workspace
