@@ -12,7 +12,7 @@ usage() {
     echo "Sync local directory to pod using rsync (requires rsync in pod)"
     echo ""
     echo "Arguments:"
-    echo "  pod-name      Name of the pod (dev-rust, dev-go, dev-python, dev-js)"
+    echo "  pod-name      Name of the pod (dev-rust, dev-go, dev-python, dev-js, dev-all)"
     echo "  local-path    Local directory to sync"
     echo "  remote-path   Remote path in pod (default: /workspace/)"
     echo ""
@@ -35,11 +35,11 @@ REMOTE_PATH="${3:-/workspace/}"
 
 # Validate pod name
 case "$POD_NAME" in
-    dev-rust|dev-go|dev-python|dev-js)
+    dev-rust|dev-go|dev-python|dev-js|dev-all)
         ;;
     *)
         echo "Error: Invalid pod name '$POD_NAME'"
-        echo "Valid names: dev-rust, dev-go, dev-python, dev-js"
+        echo "Valid names: dev-rust, dev-go, dev-python, dev-js, dev-all"
         exit 1
         ;;
 esac

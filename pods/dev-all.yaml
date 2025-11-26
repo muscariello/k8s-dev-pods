@@ -10,7 +10,7 @@ spec:
   restartPolicy: Always
   containers:
   - name: all-dev
-    image: ubuntu:24.04
+    image: buildpack-deps:bookworm
     command:
       - /bin/bash
       - -c
@@ -27,30 +27,20 @@ spec:
         # Update package lists
         apt-get update
 
-        # Install base development tools
+        # Install additional tools (buildpack-deps already has most build tools)
         apt-get install -y \
-          curl \
-          wget \
-          git \
           vim \
           nano \
           tmux \
           zsh \
-          build-essential \
-          pkg-config \
-          libssl-dev \
-          cmake \
           protobuf-compiler \
           sudo \
           ssh \
-          ca-certificates \
           unzip \
-          gcc \
-          g++ \
-          clang \
+          clang-19 \
           lldb \
           lld \
-          python3 \
+          llvm \
           python3-pip \
           python3-venv
 
@@ -66,9 +56,15 @@ spec:
         # Install Go
         echo "Installing Go..."
         GO_VERSION=1.25.4
-        wget -q https://go.dev/dl/go${GO_VERSION}.linux-amd64.tar.gz
-        tar -C /usr/local -xzf go${GO_VERSION}.linux-amd64.tar.gz
-        rm go${GO_VERSION}.linux-amd64.tar.gz
+        curl -L -o go${GO_VERSION}.linux-amd64.tar.gz --connect-timeout 30 --max-time 300 https://go.dev/dl/go${GO_VERSION}.linux-amd64.tar.gz
+        if [ $? -eq 0 ] && [ -f go${GO_VERSION}.linux-amd64.tar.gz ]; then
+          tar -C /usr/local -xzf go${GO_VERSION}.linux-amd64.tar.gz
+          rm go${GO_VERSION}.linux-amd64.tar.gz
+          echo "Go installed successfully"
+        else
+          echo "ERROR: Go download failed!"
+          exit 1
+        fi
         export PATH="/usr/local/go/bin:/workspace/go/bin:$PATH"
         export GOPATH=/workspace/go
         export GOBIN=/workspace/go/bin

@@ -17,6 +17,7 @@ kubectl delete -f "$PODS_DIR/dev-rust.yaml" --ignore-not-found=true
 kubectl delete -f "$PODS_DIR/dev-go.yaml" --ignore-not-found=true
 kubectl delete -f "$PODS_DIR/dev-python.yaml" --ignore-not-found=true
 kubectl delete -f "$PODS_DIR/dev-js.yaml" --ignore-not-found=true
+kubectl delete -f "$PODS_DIR/dev-all.yaml" --ignore-not-found=true
 
 # Delete PVCs (WARNING: This will delete all workspace data!)
 echo ""
