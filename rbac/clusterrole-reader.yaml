@@ -23,6 +23,7 @@ rules:
     - "persistentvolumes"
     - "nodes"
     - "events"
+    - "endpoints"
   verbs: ["get", "list", "watch"]
 
 # Read-only access to deployments, replicasets, statefulsets
@@ -66,7 +67,16 @@ rules:
 
 # SPIRE resources
 - apiGroups: ["spire.spiffe.io"]
-  resources: ["clusterspiffeids", "clusterfederatedtrustdomains"]
+  resources:
+    - "clusterspiffeids"
+    - "clusterspiffeids/status"
+    - "clusterspiffeids/finalizers"
+    - "clusterfederatedtrustdomains"
+    - "clusterfederatedtrustdomains/status"
+    - "clusterfederatedtrustdomains/finalizers"
+    - "clusterstaticentries"
+    - "clusterstaticentries/status"
+    - "clusterstaticentries/finalizers"
   verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
 
 # CSI Driver access (required for SPIRE)
