@@ -1,12 +1,12 @@
 # RBAC Configuration
 
-This directory contains Kubernetes RBAC resources to enable non-admin users to work with development pods in the `lumuscar-jobs` namespace.
+This directory contains Kubernetes RBAC resources to enable non-admin users to work with development pods in the `lumuscar-jobs` and `lumuscar-spire` namespaces.
 
 ## Files
 
-### Namespace-scoped (lumuscar-jobs)
+### Namespace-scoped (lumuscar-jobs, lumuscar-spire)
 
-- **`role.yaml`**: Role granting full management permissions for pods and PVCs in `lumuscar-jobs` namespace
+- **`role.yaml`**: Role granting full management permissions for pods and PVCs in `lumuscar-jobs` and `lumuscar-spire` namespaces
   - Pod: create, get, list, watch, update, patch, delete
   - Pod logs: get, list
   - Pod exec: create, get (for shell access and file sync)
@@ -47,7 +47,7 @@ subjects:
 subjects:
 - kind: ServiceAccount
   name: your-service-account
-  namespace: lumuscar-jobs
+  namespace: lumuscar-jobs # or lumuscar-spire
 ```
 
 **For a group:**
@@ -68,11 +68,18 @@ export KUBECONFIG=/path/to/admin/kubeconfig
 ./scripts/setup-rbac.sh
 ```
 
-Or apply manually:
+Or apply manually (for each namespace):
 
 ```bash
-kubectl apply -f rbac/role.yaml
-kubectl apply -f rbac/rolebinding.yaml
+# For lumuscar-jobs
+kubectl apply -f rbac/role.yaml -n lumuscar-jobs
+kubectl apply -f rbac/rolebinding.yaml -n lumuscar-jobs
+
+# For lumuscar-spire
+kubectl apply -f rbac/role.yaml -n lumuscar-spire
+kubectl apply -f rbac/rolebinding.yaml -n lumuscar-spire
+
+# Cluster-wide resources (apply once)
 kubectl apply -f rbac/clusterrole-reader.yaml
 kubectl apply -f rbac/clusterrolebinding-reader.yaml
 ```
@@ -89,6 +96,10 @@ kubectl auth can-i create pods -n lumuscar-jobs           # Should be 'yes'
 kubectl auth can-i delete pods -n lumuscar-jobs           # Should be 'yes'
 kubectl auth can-i exec pods -n lumuscar-jobs             # Should be 'yes'
 kubectl auth can-i create persistentvolumeclaims -n lumuscar-jobs  # Should be 'yes'
+
+# Test namespace-scoped permissions (lumuscar-spire)
+kubectl auth can-i create pods -n lumuscar-spire          # Should be 'yes'
+kubectl auth can-i delete pods -n lumuscar-spire          # Should be 'yes'
 
 # Test cluster-wide read permissions
 kubectl auth can-i list namespaces                        # Should be 'yes'
@@ -126,7 +137,7 @@ export KUBECONFIG=/path/to/gls-namespace/kubeconfig
 
 ## Permissions Summary
 
-### In lumuscar-jobs namespace (Full Management)
+### In lumuscar-jobs and lumuscar-spire namespaces (Full Management)
 - ✅ Create, update, delete pods
 - ✅ Create, update, delete PVCs
 - ✅ View pod logs
@@ -150,6 +161,10 @@ If you get permission errors:
    ```bash
    kubectl get role dev-pods-manager -n lumuscar-jobs
    kubectl get rolebinding dev-pods-manager-binding -n lumuscar-jobs
+   # Also check lumuscar-spire
+   kubectl get role dev-pods-manager -n lumuscar-spire
+   kubectl get rolebinding dev-pods-manager-binding -n lumuscar-spire
+   
    kubectl get clusterrole namespace-reader
    kubectl get clusterrolebinding namespace-reader-binding
    ```
@@ -174,7 +189,7 @@ If you get permission errors:
 
 - **Subject mismatch**: Ensure the username/serviceaccount/group in the bindings matches your kubeconfig identity
 - **Wrong context**: Make sure you're using the correct kubeconfig context
-- **Namespace doesn't exist**: The lumuscar-jobs namespace must exist before applying Role/RoleBinding
+- **Namespace doesn't exist**: The lumuscar-jobs or lumuscar-spire namespace must exist before applying Role/RoleBinding
 - **Cluster admin required**: You need cluster admin privileges to create ClusterRoles and ClusterRoleBindings
 
 ## Security Notes

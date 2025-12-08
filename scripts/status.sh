@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # Show status of all development pods
 
-NAMESPACE="lumuscar-jobs"
+NAMESPACE="${1:-${NAMESPACE:-lumuscar-jobs}}"
 
 echo "Development Pods Status"
 echo "======================="

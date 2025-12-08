@@ -3,7 +3,7 @@
 
 set -e
 
-NAMESPACE="lumuscar-jobs"
+NAMESPACE="${NAMESPACE:-lumuscar-jobs}"
 
 # Function to display usage
 usage() {

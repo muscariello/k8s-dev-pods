@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # Connect to the Node.js development pod
 
-NAMESPACE="lumuscar-jobs"
+NAMESPACE="${1:-${NAMESPACE:-lumuscar-jobs}}"
 POD_NAME="dev-js"
 
 echo "Connecting to $POD_NAME in namespace $NAMESPACE..."

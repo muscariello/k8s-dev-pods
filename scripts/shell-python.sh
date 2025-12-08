@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # Connect to the Python development pod
 
-NAMESPACE="lumuscar-jobs"
+NAMESPACE="${1:-${NAMESPACE:-lumuscar-jobs}}"
 POD_NAME="dev-python"
 
 echo "Connecting to $POD_NAME in namespace $NAMESPACE..."

@@ -11,6 +11,10 @@ subjects:
 - kind: Group
   name: system:serviceaccounts:lumuscar-jobs
   apiGroup: rbac.authorization.k8s.io
+# Bind to all service accounts in lumuscar-spire namespace
+- kind: Group
+  name: system:serviceaccounts:lumuscar-spire
+  apiGroup: rbac.authorization.k8s.io
 
 # Also bind to namespace-user if it's a User (uncomment if needed)
 # - kind: User

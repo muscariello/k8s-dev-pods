@@ -3,7 +3,7 @@
 
 set -e
 
-NAMESPACE="lumuscar-jobs"
+NAMESPACE="${1:-${NAMESPACE:-lumuscar-jobs}}"
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PODS_DIR="$(dirname "$SCRIPT_DIR")/pods"
 
