@@ -16,8 +16,8 @@ spec:
       - -c
       - |
         # Configure HTTP proxy
-        export HTTP_PROXY=http://proxy-wsa.esl.cisco.com:80
-        export HTTPS_PROXY=http://proxy-wsa.esl.cisco.com:80
+        export HTTP_PROXY=PROXY_URL_PLACEHOLDER
+        export HTTPS_PROXY=PROXY_URL_PLACEHOLDER
         export NO_PROXY=localhost,127.0.0.1,.svc,.cluster.local
 
         # Update package lists
@@ -74,9 +74,9 @@ spec:
         sleep infinity
     env:
     - name: HTTP_PROXY
-      value: "http://proxy-wsa.esl.cisco.com:80"
+      value: "PROXY_URL_PLACEHOLDER"
     - name: HTTPS_PROXY
-      value: "http://proxy-wsa.esl.cisco.com:80"
+      value: "PROXY_URL_PLACEHOLDER"
     - name: NO_PROXY
       value: "localhost,127.0.0.1,.svc,.cluster.local"
     - name: CARGO_HOME
