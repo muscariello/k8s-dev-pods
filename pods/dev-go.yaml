@@ -16,13 +16,13 @@ spec:
       - -c
       - |
         # Configure HTTP proxy
-        export HTTP_PROXY=PROXY_URL_PLACEHOLDER
-        export HTTPS_PROXY=PROXY_URL_PLACEHOLDER
-        export NO_PROXY=localhost,127.0.0.1,.svc,.cluster.local
+        export HTTP_PROXY=$HTTP_PROXY
+        export HTTPS_PROXY=$HTTPS_PROXY
+        export NO_PROXY=$NO_PROXY
 
         # Configure proxy for apt
-        echo "Acquire::http::Proxy \"PROXY_URL_PLACEHOLDER\";" > /etc/apt/apt.conf.d/proxy.conf
-        echo "Acquire::https::Proxy \"PROXY_URL_PLACEHOLDER\";" >> /etc/apt/apt.conf.d/proxy.conf
+        echo "Acquire::http::Proxy \"$HTTP_PROXY\";" > /etc/apt/apt.conf.d/proxy.conf
+        echo "Acquire::https::Proxy \"$HTTPS_PROXY\";" >> /etc/apt/apt.conf.d/proxy.conf
 
         # Update package lists
         apt-get update
@@ -68,11 +68,11 @@ spec:
         sleep infinity
     env:
     - name: HTTP_PROXY
-      value: "PROXY_URL_PLACEHOLDER"
+      value: "$HTTP_PROXY"
     - name: HTTPS_PROXY
-      value: "PROXY_URL_PLACEHOLDER"
+      value: "$HTTPS_PROXY"
     - name: NO_PROXY
-      value: "localhost,127.0.0.1,.svc,.cluster.local"
+      value: "$NO_PROXY"
     - name: GOPATH
       value: "/workspace/go"
     - name: GOBIN

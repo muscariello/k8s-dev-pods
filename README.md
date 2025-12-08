@@ -14,7 +14,7 @@ This repository contains Kubernetes configurations for five persistent developme
 
 Each pod has:
 - 50Gi persistent workspace storage (ceph-block)
-- HTTP proxy configuration for Cisco network
+- HTTP proxy configuration for your enterprise proxy
 - Full development toolchain for the respective language(s)
 - Task 3.45.5 for build automation
 - Resource limits: 8Gi request/32Gi limit RAM, 4/16 CPU cores
@@ -25,7 +25,7 @@ Each pod has:
 - **Full management** in `lumuscar-jobs` namespace: create/delete pods, exec, logs
 - **Read-only access** to all other namespaces
 - **Persistent storage**: Workspace data survives pod restarts
-- **Proxy-aware**: Pre-configured for Cisco network proxy
+- **Proxy-aware**: Pre-configured for your enterprise proxy
 - **Fast initialization**: Uses buildpack-deps for dev-all pod (includes build tools)
 
 ## Prerequisites
@@ -326,14 +326,14 @@ task control-plane:build
 
 ## Network Configuration
 
-All pods are configured with HTTP proxy for Cisco network:
+All pods are configured with HTTP proxy for your enterprise proxy:
 
 ```yaml
 env:
   - name: HTTP_PROXY
-    value: "http://proxy-wsa.esl.cisco.com:80"
+    value: "http://proxy.example.com:80"
   - name: HTTPS_PROXY
-    value: "http://proxy-wsa.esl.cisco.com:80"
+    value: "http://proxy.example.com:80"
   - name: NO_PROXY
     value: "localhost,127.0.0.1,.svc,.cluster.local"
 ```

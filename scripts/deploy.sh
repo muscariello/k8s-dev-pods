@@ -25,22 +25,27 @@ kubectl apply -f "$PODS_DIR/pvc.yaml"
 echo "Waiting for PVCs to be ready..."
 sleep 5
 
+# Export variables for envsubst
+export HTTP_PROXY
+export HTTPS_PROXY
+export NO_PROXY
+
 # Deploy all pods
 echo ""
 echo "Deploying dev-rust pod..."
-sed "s|value: \"http://proxy.example.com:80\"|value: \"$HTTP_PROXY\"|g" "$PODS_DIR/dev-rust.yaml" | kubectl apply -f -
+envsubst '$HTTP_PROXY $HTTPS_PROXY $NO_PROXY' < "$PODS_DIR/dev-rust.yaml" | kubectl apply -f -
 
 echo "Deploying dev-go pod..."
-sed "s|value: \"http://proxy.example.com:80\"|value: \"$HTTP_PROXY\"|g" "$PODS_DIR/dev-go.yaml" | kubectl apply -f -
+envsubst '$HTTP_PROXY $HTTPS_PROXY $NO_PROXY' < "$PODS_DIR/dev-go.yaml" | kubectl apply -f -
 
 echo "Deploying dev-python pod..."
-sed "s|value: \"http://proxy.example.com:80\"|value: \"$HTTP_PROXY\"|g" "$PODS_DIR/dev-python.yaml" | kubectl apply -f -
+envsubst '$HTTP_PROXY $HTTPS_PROXY $NO_PROXY' < "$PODS_DIR/dev-python.yaml" | kubectl apply -f -
 
 echo "Deploying dev-js pod..."
-sed "s|value: \"http://proxy.example.com:80\"|value: \"$HTTP_PROXY\"|g" "$PODS_DIR/dev-js.yaml" | kubectl apply -f -
+envsubst '$HTTP_PROXY $HTTPS_PROXY $NO_PROXY' < "$PODS_DIR/dev-js.yaml" | kubectl apply -f -
 
 echo "Deploying dev-all pod (all languages)..."
-sed "s|value: \"http://proxy.example.com:80\"|value: \"$HTTP_PROXY\"|g" "$PODS_DIR/dev-all.yaml" | kubectl apply -f -
+envsubst '$HTTP_PROXY $HTTPS_PROXY $NO_PROXY' < "$PODS_DIR/dev-all.yaml" | kubectl apply -f -
 
 echo ""
 echo "=================================================="
