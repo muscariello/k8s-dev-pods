@@ -8,8 +8,8 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PODS_DIR="$(dirname "$SCRIPT_DIR")/pods"
 
 # HTTP Proxy configuration
-HTTP_PROXY="${HTTP_PROXY:-http://proxy-wsa.esl.cisco.com:80}"
-HTTPS_PROXY="${HTTPS_PROXY:-http://proxy-wsa.esl.cisco.com:80}"
+HTTP_PROXY="${HTTP_PROXY:-http://proxy.example.com:80}"
+HTTPS_PROXY="${HTTPS_PROXY:-http://proxy.example.com:80}"
 NO_PROXY="${NO_PROXY:-localhost,127.0.0.1,.svc,.cluster.local}"
 
 echo "Deploying development environment to namespace: $NAMESPACE"
@@ -28,19 +28,19 @@ sleep 5
 # Deploy all pods
 echo ""
 echo "Deploying dev-rust pod..."
-sed "s|value: \"http://proxy-wsa.esl.cisco.com:80\"|value: \"$HTTP_PROXY\"|g" "$PODS_DIR/dev-rust.yaml" | kubectl apply -f -
+sed "s|value: \"http://proxy.example.com:80\"|value: \"$HTTP_PROXY\"|g" "$PODS_DIR/dev-rust.yaml" | kubectl apply -f -
 
 echo "Deploying dev-go pod..."
-sed "s|value: \"http://proxy-wsa.esl.cisco.com:80\"|value: \"$HTTP_PROXY\"|g" "$PODS_DIR/dev-go.yaml" | kubectl apply -f -
+sed "s|value: \"http://proxy.example.com:80\"|value: \"$HTTP_PROXY\"|g" "$PODS_DIR/dev-go.yaml" | kubectl apply -f -
 
 echo "Deploying dev-python pod..."
-sed "s|value: \"http://proxy-wsa.esl.cisco.com:80\"|value: \"$HTTP_PROXY\"|g" "$PODS_DIR/dev-python.yaml" | kubectl apply -f -
+sed "s|value: \"http://proxy.example.com:80\"|value: \"$HTTP_PROXY\"|g" "$PODS_DIR/dev-python.yaml" | kubectl apply -f -
 
 echo "Deploying dev-js pod..."
-sed "s|value: \"http://proxy-wsa.esl.cisco.com:80\"|value: \"$HTTP_PROXY\"|g" "$PODS_DIR/dev-js.yaml" | kubectl apply -f -
+sed "s|value: \"http://proxy.example.com:80\"|value: \"$HTTP_PROXY\"|g" "$PODS_DIR/dev-js.yaml" | kubectl apply -f -
 
 echo "Deploying dev-all pod (all languages)..."
-sed "s|value: \"http://proxy-wsa.esl.cisco.com:80\"|value: \"$HTTP_PROXY\"|g" "$PODS_DIR/dev-all.yaml" | kubectl apply -f -
+sed "s|value: \"http://proxy.example.com:80\"|value: \"$HTTP_PROXY\"|g" "$PODS_DIR/dev-all.yaml" | kubectl apply -f -
 
 echo ""
 echo "=================================================="
