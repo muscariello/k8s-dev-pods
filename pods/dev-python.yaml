@@ -19,6 +19,13 @@ spec:
         export HTTP_PROXY=$HTTP_PROXY
         export HTTPS_PROXY=$HTTPS_PROXY
         export NO_PROXY=$NO_PROXY
+        export http_proxy=$HTTP_PROXY
+        export https_proxy=$HTTPS_PROXY
+        export no_proxy=$NO_PROXY
+
+        # Configure proxy for apt
+        echo "Acquire::http::Proxy \"$HTTP_PROXY\";" > /etc/apt/apt.conf.d/proxy.conf
+        echo "Acquire::https::Proxy \"$HTTPS_PROXY\";" >> /etc/apt/apt.conf.d/proxy.conf
 
         # Update package lists
         apt-get update
@@ -73,10 +80,12 @@ spec:
           virtualenv
 
         # Install pyenv for multiple Python versions
-        curl https://pyenv.run | bash
+        curl -fsSL https://pyenv.run | bash
 
         # Install Task (build automation)
-        curl -sL https://taskfile.dev/install.sh | sh -s -- -b /usr/local/bin
+        curl -fsSL https://taskfile.dev/install.sh -o /tmp/install-task.sh
+        sh /tmp/install-task.sh -b /usr/local/bin
+        rm -f /tmp/install-task.sh
 
         # Setup workspace
         mkdir -p /workspace

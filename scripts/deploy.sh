@@ -6,10 +6,18 @@ set -e
 NAMESPACE="${1:-${NAMESPACE:-lumuscar-jobs}}"
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PODS_DIR="$(dirname "$SCRIPT_DIR")/pods"
+ENV_FILE="${ENV_FILE:-$HOME/.env-testing}"
+
+# Load proxy settings from an env file if they are not already set
+if [[ -f "$ENV_FILE" && ( -z "${HTTP_PROXY:-}" || -z "${HTTPS_PROXY:-}" ) ]]; then
+	set -a
+	source "$ENV_FILE"
+	set +a
+fi
 
 # HTTP Proxy configuration
-HTTP_PROXY="${HTTP_PROXY:-http://proxy.example.com:80}"
-HTTPS_PROXY="${HTTPS_PROXY:-http://proxy.example.com:80}"
+: "${HTTP_PROXY:?HTTP_PROXY must be set or available in $ENV_FILE}"
+: "${HTTPS_PROXY:?HTTPS_PROXY must be set or available in $ENV_FILE}"
 NO_PROXY="${NO_PROXY:-localhost,127.0.0.1,.svc,.cluster.local}"
 
 echo "Deploying development environment to namespace: $NAMESPACE"
